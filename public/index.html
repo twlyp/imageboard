@@ -12,11 +12,21 @@
     </header>
 
     <main>
-        <h2>{{title}}</h2>
-        <ul class='card-container'>
-            <li v-for='image in images' :key='image.id' class='card'>
-                <img class='card-thumb' :src="image.url" :alt="image.description" />
-                <p class='card-text'>{{image.title}}</p>
+        <input type="text" name="title" v-model="title">
+        <input type="text" name="username" v-model="username">
+        <input type="text" name="description" v-model="description">
+        <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked">
+        <button @click="submit">Submit</button>
+        <button @click="reset">Reset</button>
+
+
+        <h2>Latest images</h2>
+        <ul class='cards-container'>
+            <li v-for='image of images' :key='image.id' class='card'>
+                <div class="aspect-ratio-box">
+                    <img class='card-thumb' :src="image.url" :alt="image.description" />
+                    <span class='card-text'>{{image.title}}</span>
+                </div>
             </li>
         </ul>
     </main>

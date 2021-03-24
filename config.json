@@ -1,3 +1,4 @@
 {
-    "s3Url": "https://s3.amazonaws.com/spicedling/"
+    "s3Url": "https://s3.amazonaws.com/",
+    "s3Bucket": "spicedling"
 }
