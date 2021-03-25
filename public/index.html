@@ -22,14 +22,25 @@
 
         <h2>Latest images</h2>
         <ul class='cards-container'>
-            <li v-for='image of images' :key='image.id' class='card'>
+            <li v-for='image of images' :key='image.id' :img-id='image.id' class='card' @click='showDetails'>
                 <div class="aspect-ratio-box">
                     <img class='card-thumb' :src="image.url" :alt="image.description" />
                     <span class='card-text'>{{image.title}}</span>
                 </div>
             </li>
         </ul>
+
+        <details-page v-if='isDetailsOpen' :id='selectedImg' @close='hideDetails'></details-page>
     </main>
+
+    <script id="details-template" type="text/x-template">
+        <div class="details-page overlay" @click="$emit('close')">
+            <img class="details-img" :src="url" :alt="description" />
+            <h3 class="details-title">{{title}}</h3>
+            <p class="details-description">{{description}}</p>
+            <span class="details-username">{{username}}</span>
+        </div>
+    </script>
 
     <script src="/js/vue.js"></script>
     <script src="/js/axios.min.js"></script>

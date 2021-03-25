@@ -14,6 +14,8 @@ new Vue({
         username: "",
         description: "",
         file: null,
+        isDetailsOpen: false,
+        selectedImg: null,
     },
 
     mounted: function () {
@@ -63,19 +65,83 @@ new Vue({
                             this.images.unshift(imgData);
                             this.reset();
                         } else {
-                            this.showError("Upload error");
+                            throw new Error(`${resp.data.error}`);
                         }
                     })
-                    .catch((err) => this.showError(err.message));
+                    .catch(errorHandler);
             }
-            this.showError("Please fill out required fields");
+            errorHandler(new Error("Please input valid data."));
         },
         reset: function () {
             this.imgData = {};
+        },
+        showDetails: function (event) {
+            this.selectedImg = parseInt(
+                event.currentTarget.getAttribute("img-id")
+            );
+            this.isDetailsOpen = true;
+        },
+        hideDetails: function () {
+            this.selectedImg = null;
+            this.isDetailsOpen = false;
         },
         showError: function (msg) {
             alert(msg);
         },
     },
 });
+
+Vue.component("details-page", {
+    data: function () {
+        return {
+            url: "",
+            title: "",
+            username: "",
+            description: "",
+            timestamp: "",
+        };
+    },
+    props: { id: { type: Number, required: true } },
+    template: "#details-template",
+    mounted: function () {
+        axios
+            .get("/details", { params: { id: this.id } })
+            .then((resp) => {
+                if (resp.data.success) {
+                    this.imgData = resp.data.imgData;
+                } else {
+                    throw new Error(resp.data.error);
+                }
+            })
+            .catch((err) => {
+                this.$emit("close");
+                return errorHandler(err);
+            });
+    },
+    computed: {
+        imgData: {
+            get: function () {
+                return {
+                    title: this.title,
+                    username: this.username,
+                    description: this.description,
+                    url: this.url,
+                    timestamp: this.timestamp,
+                };
+            },
+            set: function (parameters) {
+                this.title = parameters.title || "";
+                this.username = parameters.username || "";
+                this.description = parameters.description || "";
+                this.url = parameters.url || "";
+                this.timestamp =
+                    parameters["created_at"] || parameters.timestamp || "";
+            },
+        },
+    },
+});
+
+function errorHandler(err) {
+    alert(`${err.name}: ${err.message}`);
+}
 // })(); // iife

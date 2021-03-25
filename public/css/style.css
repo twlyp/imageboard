@@ -54,6 +54,22 @@ h2 {
     left: 0;
 }
 
+.details-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    background-color: #111111cc;
+}
+
 @media screen and (min-width: 720px) {
     .cards-container {
         grid-template-columns: 1fr 1fr;
