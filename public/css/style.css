@@ -1,7 +1,15 @@
+:root {
+    --white: #fefffa;
+    --black: #000002;
+    --grey: #30303a;
+    --red: #f60201;
+    --yellow: #fded01;
+    --blue: #1f7fc9;
+}
+
 * {
     box-sizing: border-box;
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 16px;
 }
 
 body {
@@ -9,11 +17,24 @@ body {
 }
 
 h1 {
-    font-size: 3rem;
+    margin: 0;
+    font-size: 5em;
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: 3em;
+}
+
+h3 {
+    font-size: 2.5em;
+}
+
+h4 {
+    font-size: 1.5em;
+}
+
+form * {
+    font-size: 1em;
 }
 
 .cards-container {
@@ -34,6 +55,7 @@ h2 {
 .card {
     border: 3px solid hotpink;
     position: relative;
+    cursor: pointer;
 }
 
 .card-thumb {
@@ -47,11 +69,15 @@ h2 {
 }
 
 .card-text {
-    font-size: 1.5rem;
+    width: calc(100% - 0.5rem);
+    margin: 0;
     padding: 0.5rem;
     position: absolute;
     bottom: 0;
     left: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: center;
 }
 
 .details-page {
@@ -59,6 +85,47 @@ h2 {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.details-container {
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: min(100%, 1024px);
+    font-size: 1.5em;
+}
+
+.details-title {
+    max-width: 60%;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.details-description {
+    max-width: 80%;
+    margin: 0;
+    margin-bottom: 0.5rem;
+}
+
+.details-img {
+    padding: 1rem;
+    max-width: 100%;
+}
+
+.details-originator {
+    margin-bottom: 1rem;
+}
+
+.comment-section {
+    width: 80%;
+    /* font-size: 1.5rem; */
+}
+
+.comments-container {
+    border: 3px solid hotpink;
+    width: 100%;
 }
 
 .overlay {

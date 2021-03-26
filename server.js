@@ -3,6 +3,8 @@ const ERR = {
     fsWrite: "I couldn't save the file on the filesystem.",
     dbWrite: "I couldn't add your entry to the database.",
     dbRead: "I couldn't find this entry in the database.",
+    badData: "Your request contains invalid data.",
+    noMore: "There are no more images to show.",
 };
 
 // ========== IMAGE STORAGE INIT ========= //
@@ -20,11 +22,23 @@ const morgan = require("morgan");
 const app = express();
 app.use(morgan("tiny"));
 app.use(express.static("public"));
+app.use(express.json());
 app.use("/uploads", express.static("uploads"));
+app.use(
+    express.urlencoded({
+        extended: false,
+    })
+);
 
 // ========= ROUTES ========= //
-app.get("/images", (req, res) =>
-    db.getImages().then((results) => res.json(results))
+app.get("/images", (req, res, next) =>
+    db
+        .getImages()
+        .then((results) => res.json({ success: true, rows: results.rows }))
+        .catch((err) => {
+            res.json({ success: false, error: ERR.dbRead });
+            next(err);
+        })
 );
 
 app.post(
@@ -64,6 +78,40 @@ app.get("/details", validateId, (req, res, next) =>
         })
 );
 
+app.get("/more", validateId, (req, res, next) =>
+    db
+        .getMore(req.query.id)
+        .then((results) => {
+            if (results.rows.length === 0)
+                return res.json({ success: false, error: ERR.noMore });
+            return res.json({ success: true, rows: results.rows });
+        })
+        .catch((err) => {
+            res.json({ success: false, error: ERR.dbRead });
+            return next(err);
+        })
+);
+
+app.route("/comments")
+    .get(validateId, (req, res, next) =>
+        db
+            .getComments(req.query.id)
+            .then((results) => res.json({ success: true, rows: results.rows }))
+            .catch((err) => {
+                res.json({ success: false, error: ERR.dbRead });
+                return next(err);
+            })
+    )
+    .post(validateComment, (req, res, next) =>
+        db
+            .addComment(req.body)
+            .then(() => res.json({ success: true }))
+            .catch((err) => {
+                res.json({ success: false, error: ERR.dbWrite });
+                return next(err);
+            })
+    );
+
 // ========== ERRORS ========== //
 app.use((err, req, res, next) => {
     console.error(`${err.name}: ${err.stack}`);
@@ -77,7 +125,7 @@ app.listen(8080, () => {
 // ========== HELPERS ========== //
 
 function validateMetadata(req, res, next) {
-    let { title, username, description } = req.body;
+    let { title, username } = req.body;
     if (title && username) {
         return next();
     }
@@ -89,5 +137,15 @@ function validateId(req, res, next) {
         req.query.id = parseInt(req.query.id);
         return next();
     }
-    return res.json({ success: false, error: ERR.inputData });
+    return res.json({ success: false, error: ERR.badData });
 }
+
+function validateComment(req, res, next) {
+    console.log("req.body:", req.body);
+    if (req.body.username && req.body.content && req.body.id) return next();
+    return res.json({ success: false, error: ERR.badData });
+}
+
+// db.getMore(1).then((result) => {
+//     console.log(result.rows);
+// });

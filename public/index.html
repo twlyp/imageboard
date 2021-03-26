@@ -7,38 +7,62 @@
 </head>
 
 <body>
-    <header>
-        <h1>ImageBoard</h1>
-    </header>
-
     <main>
-        <input type="text" name="title" v-model="title">
-        <input type="text" name="username" v-model="username">
-        <input type="text" name="description" v-model="description">
-        <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked">
-        <button @click="submit">Submit</button>
-        <button @click="reset">Reset</button>
+        <div id="header">
+            <h1>ImageBoard</h1>
 
+            <input type="text" name="title" v-model="title">
+            <input type="text" name="username" v-model="username">
+            <input type="text" name="description" v-model="description">
+            <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked">
+            <button @click="submit">Submit</button>
+        </div>
 
-        <h2>Latest images</h2>
+        <form id="search-bar">
+            <!-- TODO: v-model linking -->
+            <input type="text" name="search">
+            <button type="submit" @click.prevent>Go</button>
+        </form>
+
+        <h2>{{searchTitle}}</h2>
         <ul class='cards-container'>
             <li v-for='image of images' :key='image.id' :img-id='image.id' class='card' @click='showDetails'>
                 <div class="aspect-ratio-box">
                     <img class='card-thumb' :src="image.url" :alt="image.description" />
-                    <span class='card-text'>{{image.title}}</span>
+                    <h4 class='card-text'>{{image.title}}</h4>
                 </div>
             </li>
         </ul>
+        <button v-if="isThereMore" @click='getMore'>More</button>
 
-        <details-page v-if='isDetailsOpen' :id='selectedImg' @close='hideDetails'></details-page>
+        <details-page v-if='isDetailsOpen' :img-id='selectedImg' @close='hideDetails'></details-page>
     </main>
 
     <script id="details-template" type="text/x-template">
         <div class="details-page overlay" @click="$emit('close')">
-            <img class="details-img" :src="url" :alt="description" />
-            <h3 class="details-title">{{title}}</h3>
-            <p class="details-description">{{description}}</p>
-            <span class="details-username">{{username}}</span>
+            <div class="details-container" @click.stop>
+                <img class="details-img" :src="url" :alt="description" />
+                <h3 class="details-title">{{title}}</h3>
+                <p class="details-description">{{description}}</p>
+                <span class="details-originator">created by <strong>{{username}}</strong> on {{timestamp}}</span>
+                <comment-section v-bind='$props'></comment-section>
+            </div>
+        </div>
+    </script>
+
+    <script id="comments-template" type="text/x-template">
+        <div class="comment-section">
+            <form method="post" id="comment-form">
+                <input type="text" name="content" v-model="content">
+                <input type="text" name="username" v-model="username">
+                <button type="submit" @click.prevent='submit'>Submit</button>
+            </form>
+            <ul class="comments-container">
+                <li v-for='comment of comments' :key='comment.id' class='comment-entry'>
+                    <p class="comment-txt">{{comment.content}}</p>
+                    <span class="comment-timestamp">Created by {{comment.username}} at {{comment.timestamp}}</span>
+                </li>
+            </ul>
         </div>
     </script>
 
