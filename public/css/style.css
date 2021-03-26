@@ -5,20 +5,28 @@
     --red: #f60201;
     --yellow: #fded01;
     --blue: #1f7fc9;
+    --sans: Roboto, Arial, Helvetica, sans-serif;
+    --fancy: MuseoModerno, Arial, Helvetica, sans-serif;
 }
 
 * {
     box-sizing: border-box;
-    font-family: Helvetica, Arial, sans-serif;
 }
 
 body {
     margin: 1rem;
+    font-family: var(--sans);
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--fancy);
 }
 
 h1 {
     margin: 0;
-    font-size: 5em;
+    font-size: 6em;
 }
 
 h2 {
@@ -35,7 +43,10 @@ h4 {
 
 form * {
     font-size: 1em;
+    font-family: var(--sans);
 }
+
+/* cards styling */
 
 .cards-container {
     list-style: none;
@@ -78,9 +89,13 @@ form * {
     overflow: hidden;
     white-space: nowrap;
     text-align: center;
+    font-weight: 400;
 }
 
+/* details page styling */
+
 .details-page {
+    background-color: #111111dd;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -97,10 +112,18 @@ form * {
     font-size: 1.5em;
 }
 
+#icon-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 2rem;
+}
+
 .details-title {
     max-width: 60%;
     margin-top: 1rem;
     margin-bottom: 0.5rem;
+    text-align: center;
 }
 
 .details-description {
@@ -134,7 +157,6 @@ form * {
     left: 0;
     min-width: 100%;
     min-height: 100%;
-    background-color: #111111cc;
 }
 
 @media screen and (min-width: 720px) {

@@ -40,10 +40,9 @@ new Vue({
         username: "",
         description: "",
         file: null,
-        isDetailsOpen: false,
-        selectedImg: null,
+        selectedImg: 0,
         isThereMore: false,
-        searchTitle: "Newest images",
+        searchTitle: "newest images",
     },
 
     mounted: function () {
@@ -102,11 +101,9 @@ new Vue({
             this.selectedImg = parseInt(
                 event.currentTarget.getAttribute("img-id")
             );
-            this.isDetailsOpen = true;
         },
         hideDetails: function () {
-            this.selectedImg = null;
-            this.isDetailsOpen = false;
+            this.selectedImg = 0;
         },
         getMore: function () {
             axiosGet("/more", { id: this.lastId }, (data) => {
@@ -115,9 +112,6 @@ new Vue({
                     data.rows[0].lowestId != this.lastId
                 );
             });
-        },
-        showError: function (msg) {
-            alert(msg);
         },
         errorHandler: function (err) {
             alert(`${err.name}: ${err.message}`);
@@ -133,7 +127,7 @@ Vue.component("details-page", {
             title: "",
             username: "",
             description: "",
-            timestamp: "",
+            created_at: "",
         };
     },
     props: { imgId: { type: Number, required: true } },
@@ -152,7 +146,7 @@ Vue.component("details-page", {
                     username: this.username,
                     description: this.description,
                     url: this.url,
-                    timestamp: this.timestamp,
+                    created_at: this.created_at,
                 };
             },
             set: function (parameters) {
@@ -160,12 +154,25 @@ Vue.component("details-page", {
                 this.username = parameters.username || "";
                 this.description = parameters.description || "";
                 this.url = parameters.url || "";
-                this.timestamp =
-                    parameters["created_at"] || parameters.timestamp || "";
+                this.created_at = parameters["created_at"] || "";
             },
+        },
+        createdDate() {
+            return this.formatDate(this.created_at);
         },
     },
     methods: {
+        formatDate(str) {
+            // TODO what the fuck is happening with the date
+            if (str) {
+                var dateRegExp = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
+                var matches = str.match(dateRegExp).slice(1, 7);
+                for (var i = 0; i < matches.length; i++)
+                    matches[i] = parseInt(matches[i]);
+                var date = new Date(2021, 3, 26, 14, 59, 29);
+                return date;
+            }
+        },
         errorHandler: function (err) {
             this.$emit("close");
             alert(`${err.name}: ${err.message}`);
