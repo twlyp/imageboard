@@ -3,25 +3,35 @@
 
 <head>
     <title>upuload | you | share | EVERYTHING!</title>
-    <link rel="stylesheet" href="/css/style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link
         href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@400;700&family=Roboto:ital,wght@0,400;0,700;1,400&display=swap"
         rel="stylesheet">
     <script src="https://kit.fontawesome.com/e6df17ed60.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/css/general.css">
+    <link rel="stylesheet" href="/css/cards.css">
+    <link rel="stylesheet" href="/css/details.css">
+    <link rel="stylesheet" href="/css/add-button.css">
+    <link rel="stylesheet" href="/css/media-queries.css">
 </head>
 
 <body>
     <main>
         <div id="header">
             <h1>upuload</h1>
-
-            <input type="text" name="title" v-model="title">
-            <input type="text" name="username" v-model="username">
-            <input type="text" name="description" v-model="description">
-            <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked">
-            <button @click="submit">Submit</button>
+            <add-image-btn></add-image-btn>
         </div>
+
+        <input type="text" name="title" v-model="title">
+        <input type="text" name="username" v-model="username">
+        <input type="text" name="description" v-model="description">
+        <button @click="submit">Submit</button>
+        <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked" id="file" hidden>
+        <!-- <label for="file">
+            <div class="btn red">
+                <i class="fas fa-upload fa-4x"></i>
+            </div>
+        </label> -->
 
         <form id="search-bar">
             <!-- TODO: v-model linking -->
@@ -29,18 +39,19 @@
             <button type="submit" @click.prevent>Go</button>
         </form>
 
+
         <h2>{{searchTitle}}</h2>
         <ul class='cards-container'>
-            <li v-for='image of images' :key='image.id' :img-id='image.id' class='card' @click='showDetails'>
-                <div class="aspect-ratio-box">
-                    <img class='card-thumb' :src="image.url" :alt="image.description" />
-                    <h4 class='card-text'>{{image.title}}</h4>
-                </div>
+            <li v-for='image of images' :key='image.id' :img-id='image.id' class='card metal'>
+                <a class='card-thumb' :href="`#${image.id}`">
+                    <img :src="image.url" :alt="image.description" />
+                </a>
+                <h4 class='card-text'>{{image.title}}</h4>
             </li>
         </ul>
         <button v-if="isThereMore" @click='getMore'>More</button>
 
-        <details-page v-if='selectedImg' :img-id='selectedImg' @close='hideDetails'></details-page>
+        <details-page v-if='selectedImg' :img-id='selectedImg' @close='hideDetails' />
     </main>
 
 
@@ -51,8 +62,8 @@
                 <img class="details-img" :src="url" :alt="description" />
                 <h3 class="details-title">{{title}}</h3>
                 <p class="details-description">{{description}}</p>
-                <span class="details-originator">created by <strong>{{username}}</strong> on {{formatDate(created_at)}}</span>
-                <comment-section v-bind='$props'></comment-section>
+                <span class="details-originator">created by <strong>{{username}}</strong> {{formatDate(created_at)}}</span>
+                <comment-section v-bind='$props'/>
                 <i id="icon-close" class="far fa-times-circle fa-3x" @click="$emit('close')"></i>
             </div>
         </div>
@@ -69,9 +80,34 @@
             <ul class="comments-container">
                 <li v-for='comment of comments' :key='comment.id' class='comment-entry'>
                     <p class="comment-txt">{{comment.content}}</p>
-                    <span class="comment-originator">Created by {{comment.username}} on {{comment.created_at}}</span>
+                    <span class="comment-originator">Created by {{comment.username}} {{$parent.formatDate(comment.created_at)}}</span>
                 </li>
             </ul>
+        </div>
+    </script>
+
+    <!-- template for add image menu  -->
+    <script id="add-image-template" type="text/x-template">
+        <div class="add-image-btn">
+            <transition-group name="open-menu">
+                <div class="btn red" @pointerdown='openMenu'>
+                    <i class="fas fa-plus fa-4x"></i>
+                </div>
+                <div v-if="isOpen" class="btn blue" @pointerup='pickFile'>
+                    <i class="fas fa-upload fa-4x"></i>
+                </div>
+                <div v-if="isOpen" class="btn yellow" @pointerup='pickLink'>
+                    <i class="fas fa-link fa-4x"></i>
+                </div>
+            </transition>
+
+            <!-- <div v-if="isModalOpen" class="modal">
+                <input v-if="isLink" type="text" name="url" v-model="url">
+                <input type="text" name="title" v-model="title">
+                <input type="text" name="username" v-model="username">
+                <input type="text" name="description" v-model="description">
+                <button @click="submit">Submit</button>
+            </div> -->
         </div>
     </script>
 

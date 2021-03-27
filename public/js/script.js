@@ -1,223 +1,296 @@
-// (function () {
-function createForm(parameters) {
-    var formdata = new FormData();
-    for (var p in parameters)
-        parameters[p] && formdata.append(p, parameters[p]);
-    return formdata;
-}
+(function () {
+    function createForm(parameters) {
+        var formdata = new FormData();
+        for (var p in parameters)
+            parameters[p] && formdata.append(p, parameters[p]);
+        return formdata;
+    }
 
-function axiosGet(what, params, success) {
-    return axios
-        .get(what, { params: params })
-        .then(({ data }) => {
-            if (data.success) {
-                success(data);
-            } else {
-                throw new Error(`${data.error}`);
-            }
-        })
-        .catch(this.errorHandler);
-}
+    function axiosGet(what, params, success, failure) {
+        return axios
+            .get(what, { params: params })
+            .then(({ data }) => {
+                if (data.success) {
+                    success(data);
+                } else {
+                    throw new Error(`${data.error}`);
+                }
+            })
+            .catch(failure);
+    }
 
-function axiosPost(where, what, success) {
-    return axios
-        .post(where, what)
-        .then(({ data }) => {
-            if (data.success) {
-                success(data);
-            } else {
-                throw new Error(`${data.error}`);
-            }
-        })
-        .catch(this.errorHandler);
-}
+    function axiosPost(where, what, success, failure) {
+        return axios
+            .post(where, what)
+            .then(({ data }) => {
+                if (data.success) {
+                    success(data);
+                } else {
+                    throw new Error(`${data.error}`);
+                }
+            })
+            .catch(failure);
+    }
 
-new Vue({
-    el: "main",
-    data: {
-        images: [],
-        title: "",
-        username: "",
-        description: "",
-        file: null,
-        selectedImg: 0,
-        isThereMore: false,
-        searchTitle: "newest images",
-    },
+    const MONTHS = {
+        1: "January",
+        2: "February",
+        3: "March",
+        4: "April",
+        5: "May",
+        6: "June",
+        7: "July",
+        8: "August",
+        9: "September",
+        10: "October",
+        11: "November",
+        12: "December",
+    };
 
-    mounted: function () {
-        axiosGet("/images", { search: "latest" }, (data) => {
-            this.images = data.rows;
-            this.isThereMore = Boolean(data.rows[0].lowestId != this.lastId);
-        });
-    },
-
-    computed: {
-        isValid: function () {
-            return Boolean(this.title && this.username && this.file);
+    Vue.component("details-page", {
+        template: "#details-template",
+        data: function () {
+            return {
+                url: "",
+                title: "",
+                username: "",
+                description: "",
+                created_at: "",
+            };
         },
-        imgData: {
-            get: function () {
-                return {
-                    title: this.title,
-                    username: this.username,
-                    description: this.description,
-                    file: this.file,
-                };
-            },
-            set: function (parameters) {
-                this.title = parameters.title || "";
-                this.username = parameters.username || "";
-                this.description = parameters.description || "";
-                this.file = parameters.file || null;
-                this.$refs.filePicker.value = parameters.file || null;
+        props: { imgId: { type: Number, required: true } },
+        watch: {
+            imgId: function () {
+                this.refresh();
             },
         },
-        lastId: function () {
-            var last = this.images.slice(-1);
-            return last.length === 1 ? last[0].id : undefined;
+        mounted: function () {
+            this.refresh();
         },
-    },
-
-    methods: {
-        onFilePicked: function (event) {
-            this.file = event.target.files[0] || null;
+        computed: {
+            imgData: {
+                get: function () {
+                    return this.$data;
+                },
+                set: function (parameters) {
+                    this.title = parameters.title || "";
+                    this.username = parameters.username || "";
+                    this.description = parameters.description || "";
+                    this.url = parameters.url || "";
+                    this.created_at = parameters["created_at"] || "";
+                },
+            },
         },
-        submit: function () {
-            if (this.isValid) {
-                var currentImg = this.imgData;
-                var formdata = createForm(currentImg);
-                delete currentImg.file;
-                axiosPost("/upload", formdata, ({ url }) => {
-                    currentImg.url = url;
-                    this.images.unshift(currentImg);
-                    this.imgData = {};
-                });
-            } else {
-                alert("Please input valid data.");
-            }
-        },
-        showDetails: function (event) {
-            this.selectedImg = parseInt(
-                event.currentTarget.getAttribute("img-id")
-            );
-        },
-        hideDetails: function () {
-            this.selectedImg = 0;
-        },
-        getMore: function () {
-            axiosGet("/more", { id: this.lastId }, (data) => {
-                this.images.push(...data.rows);
-                this.isThereMore = Boolean(
-                    data.rows[0].lowestId != this.lastId
+        methods: {
+            refresh() {
+                return axiosGet(
+                    "/details",
+                    { id: this.imgId },
+                    (data) => (this.imgData = data.imgData),
+                    this.errorHandler
                 );
-            });
+            },
+            formatDate(str) {
+                if (str) {
+                    var dateRegExp = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
+                    var matches = str.match(dateRegExp).slice(1, 7);
+                    var [Y, M, D, h, m, s] = matches;
+                    return `on ${Number(D)} ${
+                        MONTHS[Number(M)]
+                    } ${Y} at ${h}:${m}`;
+                }
+            },
+            errorHandler: function (err) {
+                this.$emit("close");
+                alert(`${err.name}: ${err.message}`);
+            },
         },
-        errorHandler: function (err) {
-            alert(`${err.name}: ${err.message}`);
-        },
-    },
-});
+    });
 
-Vue.component("details-page", {
-    template: "#details-template",
-    data: function () {
-        return {
-            url: "",
+    Vue.component("comment-section", {
+        template: "#comments-template",
+        props: { imgId: { type: Number, required: true } },
+        data: function () {
+            return { content: "", username: "", comments: [] };
+        },
+        watch: {
+            imgId: function () {
+                this.refresh();
+            },
+        },
+        computed: {
+            isValid: function () {
+                return Boolean(this.content && this.username && this.imgId);
+            },
+        },
+        mounted: function () {
+            this.refresh();
+        },
+        methods: {
+            submit: function () {
+                if (this.isValid) {
+                    let body = {
+                        id: this.imgId,
+                        username: this.username,
+                        content: this.content,
+                    };
+                    axiosPost(
+                        "/comments",
+                        body,
+                        this.refresh,
+                        this.errorHandler
+                    );
+                } else {
+                    alert("Please input valid data.");
+                }
+            },
+            refresh: function () {
+                return axiosGet(
+                    "/comments",
+                    { id: this.imgId },
+                    (data) => (this.comments = data.rows),
+                    this.errorHandler
+                );
+            },
+            errorHandler: function (err) {
+                alert(`${err.name}: ${err.message}`);
+            },
+        },
+    });
+
+    Vue.component("add-image-btn", {
+        template: "#add-image-template",
+        data: function () {
+            return {
+                isOpen: true,
+                isModalOpen: false,
+                isLink: false,
+                url: "",
+                title: "",
+                username: "",
+                description: "",
+                file: null,
+            };
+        },
+        methods: {
+            openMenu() {
+                this.isOpen = true;
+            },
+            pickFile() {
+                console.log("pick a file");
+            },
+            pickLink() {
+                console.log("pick a link");
+            },
+        },
+    });
+
+    var vm = new Vue({
+        el: "main",
+        data: {
+            images: [],
             title: "",
             username: "",
             description: "",
-            created_at: "",
-        };
-    },
-    props: { imgId: { type: Number, required: true } },
-    mounted: function () {
-        axiosGet(
-            "/details",
-            { id: this.imgId },
-            (data) => (this.imgData = data.imgData)
-        );
-    },
-    computed: {
-        imgData: {
-            get: function () {
-                return {
-                    title: this.title,
-                    username: this.username,
-                    description: this.description,
-                    url: this.url,
-                    created_at: this.created_at,
-                };
-            },
-            set: function (parameters) {
-                this.title = parameters.title || "";
-                this.username = parameters.username || "";
-                this.description = parameters.description || "";
-                this.url = parameters.url || "";
-                this.created_at = parameters["created_at"] || "";
-            },
+            file: null,
+            selectedImg: 0,
+            isThereMore: false,
+            searchTitle: "newest images",
         },
-        createdDate() {
-            return this.formatDate(this.created_at);
-        },
-    },
-    methods: {
-        formatDate(str) {
-            // TODO what the fuck is happening with the date
-            if (str) {
-                var dateRegExp = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
-                var matches = str.match(dateRegExp).slice(1, 7);
-                for (var i = 0; i < matches.length; i++)
-                    matches[i] = parseInt(matches[i]);
-                var date = new Date(2021, 3, 26, 14, 59, 29);
-                return date;
-            }
-        },
-        errorHandler: function (err) {
-            this.$emit("close");
-            alert(`${err.name}: ${err.message}`);
-        },
-    },
-});
 
-Vue.component("comment-section", {
-    template: "#comments-template",
-    props: { imgId: { type: Number, required: true } },
-    data: function () {
-        return { content: "", username: "", comments: [] };
-    },
-    computed: {
-        isValid: function () {
-            return Boolean(this.content && this.username && this.imgId);
-        },
-    },
-    mounted: function () {
-        this.refreshComments();
-    },
-    methods: {
-        submit: function () {
-            if (this.isValid) {
-                let body = {
-                    id: this.imgId,
-                    username: this.username,
-                    content: this.content,
-                };
-                axiosPost("/comments", body, this.refreshComments);
-            } else {
-                alert("Please input valid data.");
-            }
-        },
-        refreshComments: function () {
-            return axiosGet(
-                "/comments",
-                { id: this.imgId },
-                (data) => (this.comments = data.rows)
+        mounted: function () {
+            this.selectedImg = Number(location.hash.replace("#", "")) || 0;
+            axiosGet(
+                "/images",
+                { search: "latest" },
+                (data) => {
+                    this.images = data.rows;
+                    this.isThereMore = Boolean(
+                        data.rows[0].lowestId != this.lastId
+                    );
+                },
+                this.errorHandler
             );
         },
-        errorHandler: function (err) {
-            alert(`${err.name}: ${err.message}`);
-        },
-    },
-});
 
-// })(); // iife
+        computed: {
+            isValid: function () {
+                return Boolean(this.title && this.username && this.file);
+            },
+            imgData: {
+                get: function () {
+                    return {
+                        title: this.title,
+                        username: this.username,
+                        description: this.description,
+                        file: this.file,
+                    };
+                },
+                set: function (parameters) {
+                    this.title = parameters.title || "";
+                    this.username = parameters.username || "";
+                    this.description = parameters.description || "";
+                    this.file = parameters.file || null;
+                    this.$refs.filePicker.value = parameters.file || null;
+                },
+            },
+            lastId: function () {
+                var last = this.images.slice(-1);
+                return last.length === 1 ? last[0].id : undefined;
+            },
+            hashNumber: function () {
+                return Number(location.hash.replace("#", "")) || 0;
+            },
+        },
+
+        methods: {
+            onFilePicked: function (event) {
+                this.file = event.target.files[0] || null;
+            },
+            submit: function () {
+                if (this.isValid) {
+                    var currentImg = this.imgData;
+                    var formdata = createForm(currentImg);
+                    delete currentImg.file;
+                    axiosPost(
+                        "/upload",
+                        formdata,
+                        ({ url }) => {
+                            currentImg.url = url;
+                            this.images.unshift(currentImg);
+                            this.imgData = {};
+                        },
+                        this.errorHandler
+                    );
+                } else {
+                    alert("Please input valid data.");
+                }
+            },
+            hideDetails: function () {
+                this.selectedImg = 0;
+                location.hash = "";
+            },
+            getMore: function () {
+                axiosGet(
+                    "/more",
+                    { id: this.lastId },
+                    (data) => {
+                        this.images.push(...data.rows);
+                        this.isThereMore = Boolean(
+                            data.rows[0].lowestId != this.lastId
+                        );
+                    },
+                    this.errorHandler
+                );
+            },
+            errorHandler: function (err) {
+                alert(`${err.name}: ${err.message}`);
+            },
+        },
+    });
+
+    window.addEventListener(
+        "hashchange",
+        () => (vm.selectedImg = Number(location.hash.replace("#", "")) || 0)
+    );
+})(); // iife
