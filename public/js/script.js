@@ -147,14 +147,17 @@
                     axiosPost(
                         "/comments",
                         body,
-                        this.refresh,
+                        () => {
+                            this.reset();
+                            this.refresh();
+                        },
                         this.errorHandler
                     );
                 } else {
                     alert("Please input valid data.");
                 }
             },
-            refresh: function () {
+            refresh() {
                 return axiosGet(
                     "/comments",
                     { id: this.imgId },
@@ -162,7 +165,11 @@
                     this.errorHandler
                 );
             },
-            errorHandler: function (err) {
+            reset() {
+                this.content = "";
+                this.username = "";
+            },
+            errorHandler(err) {
                 alert(`${err.name}: ${err.message}`);
             },
         },
