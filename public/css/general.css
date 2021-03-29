@@ -126,8 +126,9 @@ form * {
     box-shadow: 0px 0px 5px 5px #999999dd;
 }
 
-#btn-plus:active .metadata-elem {
+.metadata-elem {
     margin: 0.5rem;
+    text-align: center;
 }
 
 #metadata-submit {
