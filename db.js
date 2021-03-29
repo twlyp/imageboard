@@ -31,14 +31,18 @@ module.exports = {
         db.query(
             `INSERT INTO images (url, username, title, description)
                 VALUES ($1, $2, $3, $4)
-                RETURNING url`,
+                RETURNING id, url`,
             [url, username, title, description]
         ),
     getImage: (imgId) =>
         db.query(
-            `SELECT url, username, title, description, created_at
+            `SELECT * FROM (
+                SELECT  id, url, username, title, description, created_at,
+                LAG(id) over (ORDER BY id ASC) AS prev_id,
+                LEAD(id) over (ORDER BY id ASC) AS next_id
                 FROM images
-                WHERE id = $1`,
+            ) AS x
+            WHERE id = $1`,
             [imgId]
         ),
     getComments: (imgId) =>

@@ -28,7 +28,7 @@
 body {
     margin: 1rem;
     font-family: var(--sans);
-    /* padding-top: 10rem; */
+    background-color: #7a7a7a47;
 }
 
 #header {
@@ -52,31 +52,86 @@ h3 {
 h1 {
     margin: 0;
     font-size: 6rem;
+    text-shadow: 3px 12px 10px var(--yellow), -12px -1px 10px var(--blue),
+        12px -10px 10px var(--red);
+    color: var(--black);
 }
 
 h2 {
     font-size: 3rem;
+    text-align: center;
+    margin: 0;
 }
 
 h3 {
-    font-size: 2.5rem;
+    font-size: 2em;
 }
 
 h4 {
-    font-size: 1.5rem;
+    font-size: 1.5em;
+}
+
+hr {
+    margin: 1rem 0;
 }
 
 form * {
-    font-size: 1em;
+    font-size: 1.1em;
     font-family: var(--sans);
 }
 
-.overlay {
+.page {
+    background-color: #000002dd;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--white);
     position: fixed;
     top: 0;
     left: 0;
     min-width: 100%;
     min-height: 100%;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+}
+
+.btn-size {
+    font-size: 6rem;
+}
+
+.btn {
+    border-radius: 50%;
+    width: 6rem;
+    height: 6rem;
+    font-size: 4rem;
+    color: var(--white);
+    position: relative;
+}
+
+.btn i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#btn-plus {
+    box-shadow: 0px 0px 5px 5px #999999dd;
+}
+
+#btn-plus:active .metadata-elem {
+    margin: 0.5rem;
+}
+
+#metadata-submit {
+    margin: 2rem;
 }
 
 /* metallic style  */

@@ -58,6 +58,7 @@ app.post(
                 res.json({
                     success: true,
                     url: results.rows[0].url,
+                    id: results.rows[0].id,
                 })
             )
             .catch((err) => {

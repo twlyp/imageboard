@@ -58,6 +58,8 @@
                 username: "",
                 description: "",
                 created_at: "",
+                prevId: 0,
+                nextId: 0,
             };
         },
         props: { imgId: { type: Number, required: true } },
@@ -80,6 +82,8 @@
                     this.description = parameters.description || "";
                     this.url = parameters.url || "";
                     this.created_at = parameters["created_at"] || "";
+                    this.prevId = parameters["prev_id"] || 0;
+                    this.nextId = parameters["next_id"] || 0;
                 },
             },
         },
@@ -102,9 +106,15 @@
                     } ${Y} at ${h}:${m}`;
                 }
             },
-            errorHandler: function (err) {
+            errorHandler(err) {
                 this.$emit("close");
                 alert(`${err.name}: ${err.message}`);
+            },
+            prevImg() {
+                this.$parent.hashNumber = this.prevId;
+            },
+            nextImg() {
+                this.$parent.hashNumber = this.nextId;
             },
         },
     });
@@ -160,33 +170,6 @@
         },
     });
 
-    Vue.component("add-image-menu", {
-        template: "#add-image-template",
-        data: function () {
-            return {
-                isOpen: true,
-                isModalOpen: false,
-                isLink: false,
-                url: "",
-                title: "",
-                username: "",
-                description: "",
-                file: null,
-            };
-        },
-        methods: {
-            openMenu() {
-                this.isOpen = true;
-            },
-            pickFile() {
-                console.log("pick a file");
-            },
-            pickLink() {
-                console.log("pick a link");
-            },
-        },
-    });
-
     Vue.component("metadata-page", {
         template: "#metadata-template",
         props: { file: { type: File }, url: { type: String } },
@@ -217,9 +200,6 @@
         el: "main",
         data: {
             images: [],
-            title: "",
-            username: "",
-            description: "",
             file: null,
             selectedImg: 0,
             isThereMore: false,
@@ -245,29 +225,19 @@
             isValid: function () {
                 return Boolean(this.title && this.username && this.file);
             },
-            imgData: {
-                get: function () {
-                    return {
-                        title: this.title,
-                        username: this.username,
-                        description: this.description,
-                        file: this.file,
-                    };
-                },
-                set: function (parameters) {
-                    this.title = parameters.title || "";
-                    this.username = parameters.username || "";
-                    this.description = parameters.description || "";
-                    this.file = parameters.file || null;
-                    this.$refs.filePicker.value = parameters.file || null;
-                },
-            },
             lastId: function () {
                 var last = this.images.slice(-1);
                 return last.length === 1 ? last[0].id : undefined;
             },
-            hashNumber: function () {
-                return Number(location.hash.replace("#", "")) || 0;
+            hashNumber: {
+                get() {
+                    return Number(location.hash.replace("#", "")) || 0;
+                },
+                set(newHash) {
+                    newHash = Number(newHash);
+                    location.hash = `#${newHash}`;
+                    this.selectedImg = newHash;
+                },
             },
         },
 
@@ -275,10 +245,10 @@
             pickFile() {
                 this.$refs.filePicker.click();
             },
-            onFilePicked: function (event) {
+            onFilePicked(event) {
                 this.file = event.target.files[0] || null;
             },
-            hideMetadata: function () {
+            hideMetadata() {
                 this.file = null;
             },
             upload(metadata) {
@@ -287,9 +257,9 @@
                 axiosPost(
                     "/upload",
                     formdata,
-                    ({ url }) => {
+                    ({ id, url }) => {
+                        metadata.id = id;
                         metadata.url = url;
-                        // TODO add image id
                         this.images.unshift(metadata);
                         this.reset();
                     },
@@ -300,11 +270,11 @@
                 this.file = null;
                 this.$refs.filePicker.value = null;
             },
-            hideDetails: function () {
+            hideDetails() {
                 this.selectedImg = 0;
                 location.hash = "";
             },
-            getMore: function () {
+            getMore() {
                 axiosGet(
                     "/more",
                     { id: this.lastId },
@@ -317,7 +287,7 @@
                     this.errorHandler
                 );
             },
-            errorHandler: function (err) {
+            errorHandler(err) {
                 alert(`${err.name}: ${err.message}`);
             },
         },

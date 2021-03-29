@@ -11,8 +11,6 @@
     <link rel="stylesheet" href="/css/general.css">
     <link rel="stylesheet" href="/css/cards.css">
     <link rel="stylesheet" href="/css/details.css">
-    <link rel="stylesheet" href="/css/add-button.css">
-    <link rel="stylesheet" href="/css/metadata.css">
     <link rel="stylesheet" href="/css/media-queries.css">
 </head>
 
@@ -22,14 +20,18 @@
             <h1 id="logo">upuload</h1>
             <div class="menu-wrapper">
                 <div id="btn-plus" class="btn red" @click="pickFile">
-                    <!-- + -->
                     <i class="fas fa-plus btn-icon"></i>
                     <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked" id="file">
                 </div>
             </div>
         </div>
 
+        <hr>
+
         <h2>{{searchTitle}}</h2>
+
+        <hr>
+
         <ul class='cards-container'>
             <li v-for='image of images' :key='image.id' :img-id='image.id' class='card metal'>
                 <a class='card-thumb' :href="`#${image.id}`">
@@ -50,69 +52,59 @@
 
     <!-- template for the details page -->
     <script id="details-template" type="text/x-template">
-        <div class="details-page overlay" @click="$emit('close')">
-            <div class="details-container" @click.stop>
+        <div class="details-page page overlay" @click="$emit('close')">
+            <div class="page-container" @click.stop>
                 <img class="details-img" :src="url" :alt="description" />
                 <h3 class="details-title">{{title}}</h3>
                 <p class="details-description">{{description}}</p>
                 <span class="details-originator">created by <strong>{{username}}</strong> {{formatDate(created_at)}}</span>
                 <comment-section v-bind='$props'/>
-                <i id="icon-close" class="far fa-times-circle fa-3x" @click="$emit('close')"></i>
             </div>
+            <div class="side-area left" @click.stop="nextImg">
+                <i class="fas fa-angle-left btn-size"></i>
+            </div>
+            <div class="side-area right" @click.stop="prevImg">
+                <i class="fas fa-angle-right btn-size"></i>
+            </div>
+            <i id="icon-close" class="far fa-times-circle btn-size" @click="$emit('close')"></i>
         </div>
     </script>
 
     <!-- template for the comment area -->
     <script id="comments-template" type="text/x-template">
         <div class="comment-section">
-            <form method="post" id="comment-form">
-                <input type="text" name="content" v-model="content">
-                <input type="text" name="username" v-model="username">
-                <button type="submit" @click.prevent='submit'>Submit</button>
-            </form>
             <ul class="comments-container">
                 <li v-for='comment of comments' :key='comment.id' class='comment-entry'>
                     <p class="comment-txt">{{comment.content}}</p>
-                    <span class="comment-originator">Created by {{comment.username}} {{$parent.formatDate(comment.created_at)}}</span>
+                    <span class="comment-originator">by {{comment.username}} {{$parent.formatDate(comment.created_at)}}</span>
                 </li>
             </ul>
-        </div>
-    </script>
 
-    <!-- template for add image menu  -->
-    <script id="add-image-template" type="text/x-template">
-        <div class="add-image-menu">
-            <div class="menu-wrapper">
-                <div id="btn-upload" v-if="isOpen" class="btn blue" @pointerup='pickFile'>
-                    <i class="fas fa-upload btn-icon"></i>
-                </div>
-                <div id="btn-plus" class="btn red" @pointerdown='openMenu'>
-                    <i class="fas fa-plus btn-icon"></i>
-                </div>
-                <div id="btn-link" v-if="isOpen" class="btn yellow" @pointerup='pickLink'>
-                    <i class="fas fa-link btn-icon"></i>
-                </div>
-            </div>
-            <!-- <div v-if="isModalOpen" class="modal">
-                <input v-if="isLink" type="text" name="url" v-model="url">
-                <input type="text" name="title" v-model="title">
-                <input type="text" name="username" v-model="username">
-                <input type="text" name="description" v-model="description">
-                <button @click="submit">Submit</button>
-            </div> -->
+            <form id="comment-form">
+                <input type="text" name="content" v-model="content" placeholder="your comment">
+                <input type="text" name="username" v-model="username" placeholder="your name">
+                <button type="submit" @click.prevent='submit'>Add comment</button>
+            </form>
         </div>
     </script>
 
     <!-- template for metadata page  -->
     <script id="metadata-template" type="text/x-template">
-        <div class="metadata-page overlay" @click="$emit('close')">
-            <form class="metadata-container" @click.stop>
-                <output v-if="file" name="pickedFile">{{file.name}}</output>
-                <input type="text" name="title" v-model="title" placeholder="title">
-                <input type="text" name="username" v-model="username" placeholder="username">
-                <input type="text" name="description" v-model="description" placeholder="description">
-                <button type="submit" @click.prevent="submit">Submit</button>
+        <div class="metadata-page page" @click="$emit('close')">
+            <form class="page-container" @click.stop>
+                <div class="metadata-elem" >
+                    <label for="current-file">File name: </label>
+                    <output id="current-file" v-if="file" name="pickedFile">{{file.name}}</output>
+                </div>
+                <input class="metadata-elem" type="text" name="title" v-model="title" placeholder="title">
+                <input class="metadata-elem" type="text" name="username" v-model="username" placeholder="username">
+                <input class="metadata-elem" type="text" name="description" v-model="description" placeholder="description">
+                <div id="metadata-submit" class="btn blue" @click="submit">
+                    <i class="fas fa-upload"></i>
+                </div>
             </form>
+            <i id="icon-close" class="far fa-times-circle btn-size" @click="$emit('close')"></i>
+
         </div>
     </script>
 
