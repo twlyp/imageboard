@@ -28,12 +28,19 @@
 body {
     margin: 1rem;
     font-family: var(--sans);
+    /* padding-top: 10rem; */
 }
 
-.header {
+#header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+input[type="file"] {
+    display: none;
 }
 
 h1,

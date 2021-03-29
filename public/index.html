@@ -12,33 +12,22 @@
     <link rel="stylesheet" href="/css/cards.css">
     <link rel="stylesheet" href="/css/details.css">
     <link rel="stylesheet" href="/css/add-button.css">
+    <link rel="stylesheet" href="/css/metadata.css">
     <link rel="stylesheet" href="/css/media-queries.css">
 </head>
 
 <body>
     <main>
         <div id="header">
-            <h1>upuload</h1>
-            <add-image-btn></add-image-btn>
-        </div>
-
-        <input type="text" name="title" v-model="title">
-        <input type="text" name="username" v-model="username">
-        <input type="text" name="description" v-model="description">
-        <button @click="submit">Submit</button>
-        <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked" id="file" hidden>
-        <!-- <label for="file">
-            <div class="btn red">
-                <i class="fas fa-upload fa-4x"></i>
+            <h1 id="logo">upuload</h1>
+            <div class="menu-wrapper">
+                <div id="btn-plus" class="btn red" @click="pickFile">
+                    <!-- + -->
+                    <i class="fas fa-plus btn-icon"></i>
+                    <input type="file" name="file" accept="image/*" ref="filePicker" @change="onFilePicked" id="file">
+                </div>
             </div>
-        </label> -->
-
-        <form id="search-bar">
-            <!-- TODO: v-model linking -->
-            <input type="text" name="search">
-            <button type="submit" @click.prevent>Go</button>
-        </form>
-
+        </div>
 
         <h2>{{searchTitle}}</h2>
         <ul class='cards-container'>
@@ -51,7 +40,11 @@
         </ul>
         <button v-if="isThereMore" @click='getMore'>More</button>
 
-        <details-page v-if='selectedImg' :img-id='selectedImg' @close='hideDetails' />
+        <details-page v-if='selectedImg' :img-id='selectedImg' @close='hideDetails'></details-page>
+
+        <metadata-page v-if="file" :file="file" @close="hideMetadata" @upload-ready="upload"></metadata-page>
+
+
     </main>
 
 
@@ -88,19 +81,18 @@
 
     <!-- template for add image menu  -->
     <script id="add-image-template" type="text/x-template">
-        <div class="add-image-btn">
-            <transition-group name="open-menu">
-                <div class="btn red" @pointerdown='openMenu'>
-                    <i class="fas fa-plus fa-4x"></i>
+        <div class="add-image-menu">
+            <div class="menu-wrapper">
+                <div id="btn-upload" v-if="isOpen" class="btn blue" @pointerup='pickFile'>
+                    <i class="fas fa-upload btn-icon"></i>
                 </div>
-                <div v-if="isOpen" class="btn blue" @pointerup='pickFile'>
-                    <i class="fas fa-upload fa-4x"></i>
+                <div id="btn-plus" class="btn red" @pointerdown='openMenu'>
+                    <i class="fas fa-plus btn-icon"></i>
                 </div>
-                <div v-if="isOpen" class="btn yellow" @pointerup='pickLink'>
-                    <i class="fas fa-link fa-4x"></i>
+                <div id="btn-link" v-if="isOpen" class="btn yellow" @pointerup='pickLink'>
+                    <i class="fas fa-link btn-icon"></i>
                 </div>
-            </transition>
-
+            </div>
             <!-- <div v-if="isModalOpen" class="modal">
                 <input v-if="isLink" type="text" name="url" v-model="url">
                 <input type="text" name="title" v-model="title">
@@ -108,6 +100,19 @@
                 <input type="text" name="description" v-model="description">
                 <button @click="submit">Submit</button>
             </div> -->
+        </div>
+    </script>
+
+    <!-- template for metadata page  -->
+    <script id="metadata-template" type="text/x-template">
+        <div class="metadata-page overlay" @click="$emit('close')">
+            <form class="metadata-container" @click.stop>
+                <output v-if="file" name="pickedFile">{{file.name}}</output>
+                <input type="text" name="title" v-model="title" placeholder="title">
+                <input type="text" name="username" v-model="username" placeholder="username">
+                <input type="text" name="description" v-model="description" placeholder="description">
+                <button type="submit" @click.prevent="submit">Submit</button>
+            </form>
         </div>
     </script>
 

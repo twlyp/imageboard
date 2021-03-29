@@ -1,4 +1,6 @@
 (function () {
+    // console.log("version: ", Vue.version);
+
     function createForm(parameters) {
         var formdata = new FormData();
         for (var p in parameters)
@@ -158,7 +160,7 @@
         },
     });
 
-    Vue.component("add-image-btn", {
+    Vue.component("add-image-menu", {
         template: "#add-image-template",
         data: function () {
             return {
@@ -181,6 +183,32 @@
             },
             pickLink() {
                 console.log("pick a link");
+            },
+        },
+    });
+
+    Vue.component("metadata-page", {
+        template: "#metadata-template",
+        props: { file: { type: File }, url: { type: String } },
+        data: function () {
+            return { title: "", username: "", description: "" };
+        },
+        computed: {
+            isValid() {
+                return Boolean(
+                    this.title && this.username && (this.file || this.url)
+                );
+            },
+        },
+        methods: {
+            submit() {
+                if (this.isValid) {
+                    var data = {};
+                    for (var d in this.$data) data[d] = this.$data[d];
+                    this.$emit("upload-ready", data);
+                } else {
+                    alert("Please input valid data.");
+                }
             },
         },
     });
@@ -244,27 +272,33 @@
         },
 
         methods: {
+            pickFile() {
+                this.$refs.filePicker.click();
+            },
             onFilePicked: function (event) {
                 this.file = event.target.files[0] || null;
             },
-            submit: function () {
-                if (this.isValid) {
-                    var currentImg = this.imgData;
-                    var formdata = createForm(currentImg);
-                    delete currentImg.file;
-                    axiosPost(
-                        "/upload",
-                        formdata,
-                        ({ url }) => {
-                            currentImg.url = url;
-                            this.images.unshift(currentImg);
-                            this.imgData = {};
-                        },
-                        this.errorHandler
-                    );
-                } else {
-                    alert("Please input valid data.");
-                }
+            hideMetadata: function () {
+                this.file = null;
+            },
+            upload(metadata) {
+                var formdata = createForm(metadata);
+                formdata.append("file", this.file);
+                axiosPost(
+                    "/upload",
+                    formdata,
+                    ({ url }) => {
+                        metadata.url = url;
+                        // TODO add image id
+                        this.images.unshift(metadata);
+                        this.reset();
+                    },
+                    this.errorHandler
+                );
+            },
+            reset() {
+                this.file = null;
+                this.$refs.filePicker.value = null;
             },
             hideDetails: function () {
                 this.selectedImg = 0;
