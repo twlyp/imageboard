@@ -59,6 +59,4 @@ module.exports = {
             RETURNING image_id`,
             [id, username, content]
         ),
-    // .then((results) => results.rows[0].image_id)
-    // .then((imgId) => this.getComments(imgId)),
 };

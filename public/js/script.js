@@ -1,6 +1,4 @@
 (function () {
-    // console.log("version: ", Vue.version);
-
     function createForm(parameters) {
         var formdata = new FormData();
         for (var p in parameters)
@@ -196,6 +194,8 @@
         },
     });
 
+    var timeout;
+
     var vm = new Vue({
         el: "main",
         data: {
@@ -219,6 +219,17 @@
                 },
                 this.errorHandler
             );
+        },
+
+        watch: {
+            isThereMore: function () {
+                // infinite scroll
+                if (this.isThereMore) {
+                    timeout = setTimeout(checkScrollPos, 500);
+                } else {
+                    clearTimeout(timeout);
+                }
+            },
         },
 
         computed: {
@@ -297,4 +308,16 @@
         "hashchange",
         () => (vm.selectedImg = Number(location.hash.replace("#", "")) || 0)
     );
+
+    // infinite scroll
+    function checkScrollPos() {
+        if (
+            document.documentElement.scrollTop >
+            document.documentElement.offsetHeight - 2 * window.innerHeight
+        ) {
+            vm.getMore();
+        } else {
+            timeout = setTimeout(checkScrollPos, 500);
+        }
+    }
 })(); // iife

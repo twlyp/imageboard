@@ -40,7 +40,6 @@
                 <h4 class='card-text'>{{image.title}}</h4>
             </li>
         </ul>
-        <button v-if="isThereMore" @click='getMore'>More</button>
 
         <details-page v-if='selectedImg' :img-id='selectedImg' @close='hideDetails'></details-page>
 

@@ -1,6 +1,7 @@
 const ERR = {
     inputData: "Please input valid data.",
-    fsWrite: "I couldn't save the file on the filesystem.",
+    fsWrite:
+        "I couldn't save the file on the filesystem. Maybe the file is too big? (max 2 MB)",
     dbWrite: "I couldn't add your entry to the database.",
     dbRead: "I couldn't find this entry in the database.",
     badData: "Your request contains invalid data.",
@@ -17,10 +18,10 @@ const conf = require("./config");
 // ========== SERVER INIT ========= //
 const db = require("./db");
 const express = require("express");
-const morgan = require("morgan");
+// const morgan = require("morgan");
 
 const app = express();
-app.use(morgan("tiny"));
+// app.use(morgan("tiny"));
 app.use(express.static("public"));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
@@ -71,10 +72,9 @@ app.get("/details", validateId, (req, res, next) =>
     db
         .getImage(req.query.id)
         .then((results) => {
-            console.log("results.rows: ", results.rows);
             if (results.rows.length === 1)
-                return succeed(res, { imgData: results.rows[0] });
-            return fail(res, "dbRead");
+                return res.json({ success: true, imgData: results.rows[0] });
+            return res.json({ success: false, error: ERR.Read });
         })
         .catch((err) => {
             res.json({ success: false, error: ERR.dbRead });
@@ -118,13 +118,11 @@ app.route("/comments")
 
 // ========== ERRORS ========== //
 app.use((err, req, res, next) => {
-    console.error(`${err.name}: ${err.stack}`);
+    return res.json({ success: false, error: `${err.name}: ${err.message}` });
 });
 
 // ========= END ========= //
-app.listen(8080, () => {
-    console.log("listening");
-});
+app.listen(process.env.PORT || 8080);
 
 // ========== HELPERS ========== //
 
@@ -145,29 +143,6 @@ function validateId(req, res, next) {
 }
 
 function validateComment(req, res, next) {
-    console.log("req.body:", req.body);
     if (req.body.username && req.body.content && req.body.id) return next();
     return res.json({ success: false, error: ERR.badData });
 }
-
-function succeed(res, data) {
-    data.success = true;
-    return res.json(data);
-}
-
-function fail(res, errorCode) {
-    const ERR = {
-        inputData: "Please input valid data.",
-        fsWrite: "I couldn't save the file on the filesystem.",
-        dbWrite: "I couldn't add your entry to the database.",
-        dbRead: "I couldn't find this entry in the database.",
-        badData: "Your request contains invalid data.",
-        noMore: "There are no more images to show.",
-    };
-
-    return res.json({ success: false, error: ERR[errorCode] });
-}
-
-// db.getMore(1).then((result) => {
-//     console.log(result.rows);
-// });
