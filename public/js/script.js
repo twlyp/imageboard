@@ -193,6 +193,11 @@
                 if (this.isValid) {
                     var data = {};
                     for (var d in this.$data) data[d] = this.$data[d];
+                    // var formdata = createForm({
+                    //     title: this.title,
+                    //     username: this.username,
+                    //     file: this.file,
+                    // });
                     this.$emit("upload-ready", data);
                 } else {
                     alert("Please input valid data.");
@@ -279,10 +284,10 @@
                         metadata.id = id;
                         metadata.url = url;
                         this.images.unshift(metadata);
-                        this.reset();
                     },
                     this.errorHandler
                 );
+                this.reset();
             },
             reset() {
                 this.file = null;

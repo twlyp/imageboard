@@ -26,9 +26,7 @@ exports.upload = (req, res, next) => {
     })
         .promise()
         .then(() => {
-            fs.unlink(path, () => {
-                console.log(path, " deleted");
-            });
+            fs.unlink(path, () => {});
             next();
         })
         .catch((err) => next(err));

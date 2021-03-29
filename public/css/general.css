@@ -31,12 +31,20 @@ body {
     background-color: #7a7a7a47;
 }
 
+main {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
 #header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     flex-wrap: nowrap;
+    width: 100%;
 }
 
 input[type="file"] {
@@ -73,6 +81,7 @@ h4 {
 
 hr {
     margin: 1rem 0;
+    width: 100%;
 }
 
 form * {

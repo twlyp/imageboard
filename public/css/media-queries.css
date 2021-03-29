@@ -17,4 +17,8 @@
     .card-thumb {
         height: 20vw;
     }
+
+    #header {
+        max-width: 1500px;
+    }
 }
