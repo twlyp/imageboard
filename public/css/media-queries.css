@@ -1,0 +1,24 @@
+@media screen and (min-width: 720px) {
+    .cards-container {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .card-thumb {
+        height: 35vw;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .cards-container {
+        grid-template-columns: 1fr 1fr 1fr;
+        max-width: 1500px;
+    }
+
+    .card-thumb {
+        height: 20vw;
+    }
+
+    #header {
+        max-width: 1500px;
+    }
+}
